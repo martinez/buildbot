@@ -116,7 +116,7 @@ class GitPoller(base.ChangeSource):
             try:
                 output = p.communicate()[0]
                 break
-            except (OSError, select.error), e:
+            except (OSError, IOError, select.error), e:
                 if e[0] == errno.EINTR:
                     continue
                 else:
