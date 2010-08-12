@@ -2,7 +2,6 @@ import time
 import tempfile
 import os
 import subprocess
-import locale
 
 import select
 import errno
@@ -115,7 +114,7 @@ class GitPoller(base.ChangeSource):
         # dirty hack - work around EINTR oddness on Mac builder
         while True:
             try:
-                output = unicode(p.communicate()[0], locale.getpreferredencoding())
+                output = p.communicate()[0]
                 break
             except (OSError, IOError, select.error), e:
                 if e[0] == errno.EINTR:
