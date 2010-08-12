@@ -148,6 +148,9 @@ class DBSpec(object):
         # special-case 'sqlite3', replacing it with the available implementation
         if dbapiName == 'sqlite3':
             dbapiName = self._get_sqlite_dbapi_name()
+        elif dbapiName == 'psycopg2':
+            import psycopg2
+            psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
         self.dbapiName = dbapiName
         self.connargs = connargs
@@ -211,6 +214,16 @@ class DBSpec(object):
                 args['max_idle'] = int(args['max_idle'])
 
             return cls("MySQLdb", use_unicode=True, charset="utf8", **args)
+        elif driver == "psycopg2":
+            args['host'] = host
+            args['database'] = database
+            if user:
+                args['user'] = user
+            if passwd:
+                args['password'] = passwd
+            if port:
+                args['port'] = port
+            return cls("psycopg2", **args)
         else:
             raise ValueError("Unsupported dbapi %s" % driver)
 

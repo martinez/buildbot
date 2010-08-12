@@ -16,10 +16,10 @@ class Upgrader(base.Upgrader):
         try:
             cursor.execute("""
                 CREATE TABLE schedulers (
-                    `schedulerid` INTEGER PRIMARY KEY, -- joins to other tables
-                    `name` VARCHAR(127) NOT NULL, -- the scheduler's name according to master.cfg
-                    `class_name` VARCHAR(127) NOT NULL, -- the scheduler's class
-                    `state` VARCHAR(1024) NOT NULL -- JSON-encoded state dictionary
+                    schedulerid INTEGER PRIMARY KEY, -- joins to other tables
+                    name VARCHAR(127) NOT NULL, -- the scheduler's name according to master.cfg
+                    class_name VARCHAR(127) NOT NULL, -- the scheduler's class
+                    state VARCHAR(1024) NOT NULL -- JSON-encoded state dictionary
                 );
             """)
         except:
@@ -32,13 +32,13 @@ class Upgrader(base.Upgrader):
 
         try:
             cursor.execute("""
-                CREATE UNIQUE INDEX `name_and_class` ON
-                    schedulers (`name`, `class_name`)
+                CREATE UNIQUE INDEX name_and_class ON
+                    schedulers (name, class_name)
             """)
 
             cursor.execute("""
-                INSERT INTO schedulers (`schedulerid`, `name`, `state`, `class_name`)
-                    SELECT `schedulerid`, `name`, `state`, '' FROM schedulers_old
+                INSERT INTO schedulers (schedulerid, name, state, class_name)
+                    SELECT schedulerid, name, state, '' FROM schedulers_old
             """)
             cursor.execute("""
                 DROP TABLE schedulers_old

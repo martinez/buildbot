@@ -177,7 +177,7 @@ class DBSchemaManager(unittest.TestCase):
     def test_get_db_version_int(self):
         conn = self.spec.get_sync_connection()
         c = conn.cursor()
-        c.execute("CREATE TABLE version (`version` integer)")
+        c.execute("CREATE TABLE version (version integer)")
         c.execute("INSERT INTO version values (17)")
         self.assertEqual(self.sm.get_db_version(conn), 17)
 
@@ -200,12 +200,12 @@ class DBSchemaManager(unittest.TestCase):
     def test_scheduler_name_uniqueness(self):
         self.sm.upgrade(quiet=True)
         c = self.spec.get_sync_connection().cursor()
-        c.execute("""INSERT INTO schedulers (`name`, `class_name`, `state`)
+        c.execute("""INSERT INTO schedulers (name, class_name, state)
                                              VALUES ('s1', 'Nightly', '')""")
-        c.execute("""INSERT INTO schedulers (`name`, `class_name`, `state`)
+        c.execute("""INSERT INTO schedulers (name, class_name, state)
                                              VALUES ('s1', 'Periodic', '')""")
         self.assertRaises(Exception, c.execute,
-                """INSERT INTO schedulers (`name`, `class_name`, `state`)
+                """INSERT INTO schedulers (name, class_name, state)
                                    VALUES ('s1', 'Nightly', '')""")
 
 class MySQLDBSchemaManager(DBSchemaManager):

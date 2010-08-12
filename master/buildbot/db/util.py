@@ -10,7 +10,7 @@ def sql_insert(dbapi, table, columns):
         params = ",".join(("?",)*len(columns))
     elif dbapi.paramstyle == 'numeric':
         params = ",".join(":%d" % d for d in range(1, len(columns)+1))
-    elif dbapi.paramstyle == 'format':
+    elif dbapi.paramstyle in ('format', 'pyformat'):
         params = ",".join(("%s",)*len(columns))
     else:
         raise RuntimeError("unsupported paramstyle %s" % dbapi.paramstyle)

@@ -10,19 +10,19 @@ class Upgrader(base.Upgrader):
         cursor = self.conn.cursor()
         cursor.execute("""
         ALTER TABLE changes
-            add column `repository` text not null default ''
+            add column repository text not null default ''
         """)
         cursor.execute("""
         ALTER TABLE changes
-            add column `project` text not null default ''
+            add column project text not null default ''
         """)
         cursor.execute("""
         ALTER TABLE sourcestamps
-            add column `repository` text not null default ''
+            add column repository text not null default ''
         """)
         cursor.execute("""
         ALTER TABLE sourcestamps
-            add column `project` text not null default ''
+            add column project text not null default ''
         """)
 
     def set_version(self):

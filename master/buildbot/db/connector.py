@@ -121,6 +121,19 @@ class DBConnector(util.ComparableMixin):
         # this is a seam for use in testing
         return util.now()
 
+    def _getLastRowId(self, cur, table_name, id_name):
+        """
+        Gets the id of the last inserted row. PostgreSQL needs
+        to be given the table and column name.
+        """
+        if self._spec.dbapiName == 'psycopg2':
+            cur.execute("""
+                SELECT currval(pg_get_serial_sequence('%s', '%s'))
+            """ % (table_name, id_name))
+            return cur.fetchone()[0]
+        else:
+            return cur.lastrowid
+
     def start(self):
         # this only *needs* to be called in reactorless environments (which
         # should be eliminated anyway).  but it doesn't hurt anyway
@@ -150,7 +163,7 @@ class DBConnector(util.ComparableMixin):
         placeholders, like::
          INSERT INTO foo (col1, col2) VALUES (%s,%s)
         """
-        if self.paramstyle == "format":
+        if self.paramstyle in ("format", "pyformat"):
             return query.replace("?","%s")
         assert self.paramstyle == "qmark"
         return query
@@ -324,7 +337,7 @@ class DBConnector(util.ComparableMixin):
                   change.when, change.category, change.repository,
                   change.project)
         t.execute(q, values)
-        change.number = t.lastrowid
+        change.number = self._getLastRowId(t, 'changes', 'changeid')
 
         for link in change.links:
             t.execute(self.quoteq("INSERT INTO change_links (changeid, link) "
@@ -620,7 +633,7 @@ class DBConnector(util.ComparableMixin):
                                 " (name, class_name, state)"
                                 "  VALUES (?,?,?)")
                 t.execute(q, (name, class_name, state_json))
-                sid = t.lastrowid
+                sid = self._getLastRowId(t, 'schedulers', 'schedulerid')
             log.msg("scheduler '%s' got id %d" % (scheduler.name, sid))
             scheduler.schedulerid = sid
 
@@ -654,12 +667,12 @@ class DBConnector(util.ComparableMixin):
                             " (patchlevel, patch_base64, subdir)"
                             " VALUES (?,?,?)")
             t.execute(q, (patchlevel, base64.b64encode(diff), subdir))
-            patchid = t.lastrowid
+            patchid = self._getLastRowId(t, 'patches', 'id')
         t.execute(self.quoteq("INSERT INTO sourcestamps"
                               " (branch, revision, patchid, project, repository)"
                               " VALUES (?,?,?,?,?)"),
                   (ss.branch, ss.revision, patchid, ss.project, ss.repository))
-        ss.ssid = t.lastrowid
+        ss.ssid = self._getLastRowId(t, 'sourcestamps', 'id')
         q2 = self.quoteq("INSERT INTO sourcestamp_changes"
                          " (sourcestampid, changeid) VALUES (?,?)")
         for c in ss.changes:
@@ -675,7 +688,7 @@ class DBConnector(util.ComparableMixin):
                               "  sourcestampid, submitted_at)"
                               " VALUES (?,?,?,?)"),
                   (external_idstring, reason, ssid, now))
-        bsid = t.lastrowid
+        bsid = self._getLastRowId(t, 'buildsets', 'id')
         for propname, propvalue in properties.properties.items():
             encoded_value = json.dumps(propvalue)
             t.execute(self.quoteq("INSERT INTO buildset_properties"
@@ -688,7 +701,7 @@ class DBConnector(util.ComparableMixin):
                                   " (buildsetid, buildername, submitted_at)"
                                   " VALUES (?,?,?)"),
                       (bsid, bn, now))
-            brid = t.lastrowid
+            brid = self._getLastRowId(t, 'buildrequests', 'id')
             brids.append(brid)
         self.notify("add-buildset", bsid)
         self.notify("add-buildrequest", *brids)
@@ -840,7 +853,7 @@ class DBConnector(util.ComparableMixin):
         t.execute(self.quoteq("INSERT INTO builds (number, brid, start_time)"
                               " VALUES (?,?,?)"),
                   (buildnumber, brid, now))
-        bid = t.lastrowid
+        bid = self._getLastRowId(t, 'builds', 'id')
         self.notify("add-build", bid)
         return bid
 

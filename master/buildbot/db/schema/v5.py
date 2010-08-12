@@ -45,7 +45,7 @@ class Upgrader(base.Upgrader):
         lengthstr=""
         if length is not None and self.dbapiName == 'MySQLdb':
             lengthstr = " (%i)" % length
-        q = "CREATE INDEX `%(table)s_%(column)s` ON `%(table)s` (`%(column)s`%(lengthstr)s)"
+        q = 'CREATE INDEX "%(table)s_%(column)s" ON "%(table)s" ("%(column)s"%(lengthstr)s)'
         cursor = self.conn.cursor()
         cursor.execute(q % locals())
 

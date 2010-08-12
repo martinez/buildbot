@@ -31,6 +31,7 @@ specified with @code{sqlite:///} and absolute paths with @code{sqlite:////}
 @example
 c['db_url'] = "sqlite:///state.sqlite"
 c['db_url'] = "mysql://user:pass@@somehost.com/database_name?max_idle=300"
+c['db_url'] = "psycopg2://user:pass@@somehost.com/database_name"
 @end example
 
 The @code{max_idle} argument for MySQL connections should be set to something
