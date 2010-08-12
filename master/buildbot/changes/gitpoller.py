@@ -132,8 +132,8 @@ class GitPoller(base.ChangeSource):
         output = self._get_git_output(args)
         
         if len(output.strip()) == 0:
-            raise EnvironmentError('could not get commit comment for rev %s' % rev)
-        
+            log.msg('gitpoller: could not get commit comment for rev %s' % rev)
+
         return output
 
     def _get_commit_timestamp(self, rev):
